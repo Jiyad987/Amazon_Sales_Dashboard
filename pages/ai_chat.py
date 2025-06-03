@@ -28,7 +28,7 @@ def get_openai_response(prompt, data_context):
     try:
         client = openai.OpenAI(
             base_url="https://openrouter.ai/api/v1",
-            api_key=st.secrets["OPENROUTER_API_KEY"],
+            api_key=st.secrets["openrouter"]["api_key"]  # Updated to match TOML structure
         )
         response = client.chat.completions.create(
             model="openai/gpt-3.5-turbo-0613", 
