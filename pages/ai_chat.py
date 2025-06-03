@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import openai
 import os
+from datetime import datetime
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -10,20 +11,24 @@ load_dotenv()
 # Function to load data
 def load_data():
     file_path = "Amazon_Data.xlsx"
+    if not os.path.exists(file_path):
+        st.error(f"File not found: {file_path}")
+        return None
     
     try:
         # Try reading as Excel
-        return pd.read_excel(file_path)
-    except:
-        # Try reading as CSV if Excel fails
-        return pd.read_csv(file_path)
+        return pd.read_excel(file_path,engine='openpyxl')
+    except Exception as e:
+        st.error(f"Error reading Excel file: {e}")
+        return None
+        # return pd.read_csv(file_path)
 
 # Function to generate response from OpenAI
 def get_openai_response(prompt, data_context):
     try:
         client = openai.OpenAI(
             base_url="https://openrouter.ai/api/v1",
-            api_key="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",
+            api_key=st.secrets["OPENROUTER_API_KEY"],
         )
         response = client.chat.completions.create(
             model="openai/gpt-3.5-turbo-0613", 
@@ -37,9 +42,11 @@ def get_openai_response(prompt, data_context):
     except Exception as e:
         return f"Error getting response: {str(e)}"
 
-# Load the data
+# Load the data 
 df = load_data()
-
+if df is None:
+    st.error("Failed to load data. Please check if the data file exists.")
+    st.stop()
 # Create a data context string
 data_context = df.head(30).to_string()
 
